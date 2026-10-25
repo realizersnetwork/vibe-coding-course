@@ -2,13 +2,20 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const e = new URLSearchParams(location.search).get("error");
+    if (!e) return;
+    if (e === "google") setErr("Google 로그인은 아직 키가 없습니다.");
+    else setErr("카카오 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+  }, []);
 
   return (
     <div className="grid min-h-screen place-items-center bg-[#f7f7f7] px-4">
