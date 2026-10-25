@@ -1,57 +1,62 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { CATEGORIES, HOBBIES, type Category } from "@/data/hobbies";
+import TopBar from "@/components/TopBar";
+import HobbyCard from "@/components/HobbyCard";
 
 export default function CategoryPage() {
   const params = useParams<{ type: string }>();
   const type = params.type as Category;
-  const label = CATEGORIES.find((c) => c.key === type)?.label || type;
+  const cat = CATEGORIES.find((c) => c.key === type);
   const items = HOBBIES.filter((h) => h.category === type);
+  const { status } = useSession();
+  const loggedIn = status === "authenticated";
   const [marks, setMarks] = useState<string[]>([]);
-  const [user, setUser] = useState<string | null>(null);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
-    setUser(localStorage.getItem("hobbyfind-user"));
-    setMarks(JSON.parse(localStorage.getItem("hobbyfind-marks") || "[]"));
-  }, []);
+    if (!loggedIn) return;
+    fetch("/api/bookmarks")
+      .then(async (r) => {
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || "불러오기 실패");
+        setMarks(j.ids || []);
+      })
+      .catch((e) => setErr(e.message));
+  }, [loggedIn]);
 
-  function toggle(id: string) {
-    if (!user) {
+  async function toggle(id: string) {
+    if (!loggedIn) {
       location.href = "/login";
       return;
     }
-    setMarks((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      localStorage.setItem("hobbyfind-marks", JSON.stringify(next));
-      return next;
+    const res = await fetch("/api/bookmarks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hobbyId: id }),
     });
+    const j = await res.json();
+    if (!res.ok) {
+      setErr(j.error || "저장 실패");
+      return;
+    }
+    setMarks((prev) => (j.saved ? [...prev, id] : prev.filter((x) => x !== id)));
   }
 
   return (
     <div>
-      <header className="border-b">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5">
-          <Link href="/" className="font-bold text-rose-600">HobbyFind</Link>
-        </div>
-      </header>
-      <main className="mx-auto max-w-5xl px-5 py-10">
-        <p className="text-sm text-rose-500">카테고리</p>
-        <h1 className="text-3xl font-bold">{label}</h1>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
+      <TopBar />
+      <main className="mx-auto max-w-6xl px-5 py-10">
+        <p className="text-sm text-[#FF385C]">카테고리</p>
+        <h1 className="text-3xl font-bold">{cat?.label || type}</h1>
+        <p className="mt-2 text-neutral-600">{cat?.intro}</p>
+        {err && <p className="mt-3 text-sm text-red-500">{err}</p>}
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((h) => (
-            <article key={h.id} className="overflow-hidden rounded-2xl border">
-              <img src={h.img} alt="" className="h-44 w-full object-cover" />
-              <div className="p-5">
-              <h2 className="text-lg font-semibold">{h.name}</h2>
-              <p className="mt-2 text-sm text-neutral-500">{h.summary}</p>
-              <button className="mt-4 text-sm font-semibold text-rose-600" onClick={() => toggle(h.id)}>
-                {marks.includes(h.id) ? "북마크 해제" : "북마크"}
-              </button>
-              </div>
-            </article>
+            <HobbyCard key={h.id} hobby={h} saved={marks.includes(h.id)} onToggle={toggle} showBookmark />
           ))}
         </div>
       </main>

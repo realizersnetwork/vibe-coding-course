@@ -1,50 +1,48 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-
-const books = [
-  { id: "b1", title: "사피엔스", by: "유발 하라리", type: "지식인", why: "인류의 큰 그림을 한 권에." },
-  { id: "b2", title: "원칙", by: "레이 달리오", type: "기업가", why: "의사결정의 시스템을 만든다." },
-  { id: "b3", title: "데미안", by: "헤르만 헤세", type: "예술가", why: "자아를 깨우는 소설." },
-  { id: "b4", title: "아토믹 해빗", by: "제임스 클리어", type: "스포츠선수", why: "1%의 복리." },
-  { id: "b5", title: "코스모스", by: "칼 세이건", type: "지식인", why: "밤하늘을 다시 보게 한다." },
-  { id: "b6", title: "픽사 스토리텔링", by: "매튜 룬", type: "예술가", why: "이야기를 설계하는 법." },
-];
-
-const types = ["전체", "기업가", "연예인", "스포츠선수", "지식인", "예술가"];
+import { signOut, useSession } from "next-auth/react";
+import { BOOKS, TYPES } from "@/data/books";
 
 export default function Page() {
-  const [user, setUser] = useState<string | null>(null);
+  const { data, status } = useSession();
+  const loggedIn = status === "authenticated";
   const [filter, setFilter] = useState("전체");
   const [saved, setSaved] = useState<string[]>([]);
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
 
   useEffect(() => {
-    setUser(localStorage.getItem("shelf-user"));
-    setSaved(JSON.parse(localStorage.getItem("shelf-saved") || "[]"));
-  }, []);
+    if (status === "unauthenticated") location.href = "/login";
+    if (status !== "authenticated") return;
+    fetch("/api/saves")
+      .then(async (r) => {
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || "관심 책을 불러오지 못했습니다.");
+        setSaved(j.ids || []);
+      })
+      .catch((e) => setErr(e.message));
+  }, [status]);
 
-  const list = useMemo(() => books.filter((b) => filter === "전체" || b.type === filter), [filter]);
+  const list = useMemo(() => BOOKS.filter((b) => filter === "전체" || b.type === filter), [filter]);
 
-  if (!user) {
+  async function toggle(id: string) {
+    setErr("");
+    const res = await fetch("/api/saves", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bookId: id }),
+    });
+    const j = await res.json();
+    if (!res.ok) {
+      setErr(j.error || "저장에 실패했습니다.");
+      return;
+    }
+    setSaved((prev) => (j.saved ? [...prev, id] : prev.filter((x) => x !== id)));
+  }
+
+  if (status === "loading" || !loggedIn) {
     return (
-      <div className="grid min-h-screen place-items-center bg-[#f7f4ef]">
-        <form
-          className="w-80 bg-white p-8 shadow"
-          onSubmit={(e) => {
-            e.preventDefault();
-            localStorage.setItem("shelf-user", email || "reader@local");
-            setUser(email || "reader@local");
-          }}
-        >
-          <h1 className="font-serif text-3xl">Shelf</h1>
-          <p className="mt-1 text-sm text-neutral-500">로그인 / 회원가입 (로컬 저장 · Supabase 키 연결 가능)</p>
-          <input className="mt-6 w-full border px-3 py-2" placeholder="이메일" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input className="mt-2 w-full border px-3 py-2" type="password" placeholder="비밀번호" value={pw} onChange={(e) => setPw(e.target.value)} />
-          <button className="mt-4 w-full bg-black py-2 text-white">입장</button>
-        </form>
-      </div>
+      <div className="grid min-h-screen place-items-center bg-[#f7f4ef] text-sm text-neutral-500">로딩 중...</div>
     );
   }
 
@@ -52,35 +50,42 @@ export default function Page() {
     <div className="min-h-screen bg-[#f7f4ef]">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-5 py-6">
         <h1 className="font-serif text-3xl">Shelf</h1>
-        <button onClick={() => { localStorage.removeItem("shelf-user"); setUser(null); }}>로그아웃</button>
+        <div className="flex items-center gap-4 text-sm">
+          <span className="text-neutral-500">{data?.user?.email}</span>
+          <button type="button" onClick={() => signOut({ callbackUrl: "/login" })}>
+            로그아웃
+          </button>
+        </div>
       </header>
       <div className="mx-auto flex max-w-5xl flex-wrap gap-2 px-5">
-        {types.map((t) => (
-          <button key={t} onClick={() => setFilter(t)} className={`rounded-full px-3 py-1 text-sm ${filter === t ? "bg-black text-white" : "bg-white"}`}>
+        {TYPES.map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setFilter(t)}
+            className={`rounded-full px-3 py-1 text-sm ${filter === t ? "bg-black text-white" : "bg-white"}`}
+          >
             {t}
           </button>
         ))}
       </div>
+      {err && <p className="mx-auto max-w-5xl px-5 pt-4 text-sm text-red-500">{err}</p>}
       <main className="mx-auto grid max-w-5xl gap-4 px-5 py-8 md:grid-cols-3">
         {list.map((b) => (
           <article key={b.id} className="bg-white p-5 shadow-sm">
-            <p className="text-xs tracking-wide text-neutral-400">{b.type}</p>
+            <p className="text-xs tracking-wide text-neutral-400">
+              {b.type} · {b.celeb} 추천
+            </p>
             <h2 className="mt-2 font-serif text-2xl">{b.title}</h2>
             <p className="text-sm">{b.by}</p>
             <p className="mt-3 text-sm text-neutral-600">{b.why}</p>
-            <button
-              className="mt-4 text-sm underline"
-              onClick={() => {
-                const next = saved.includes(b.id) ? saved.filter((x) => x !== b.id) : [...saved, b.id];
-                setSaved(next);
-                localStorage.setItem("shelf-saved", JSON.stringify(next));
-              }}
-            >
+            <button type="button" className="mt-4 text-sm underline" onClick={() => toggle(b.id)}>
               {saved.includes(b.id) ? "관심 해제" : "관심 책 저장"}
             </button>
           </article>
         ))}
       </main>
+      <p className="mx-auto max-w-5xl px-5 pb-10 text-sm text-neutral-500">관심 책 {saved.length}권</p>
     </div>
   );
 }

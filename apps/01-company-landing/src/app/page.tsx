@@ -89,8 +89,24 @@ export default function Page() {
           {sent && <p className="text-sm text-[#3d8900]">접수되었습니다. 상담 선생님이 연락드립니다.</p>}
         </form>
       </section>
-      <footer className="border-t py-8 text-center text-sm text-neutral-500">
-        서울시 강남구 · 02-000-0000 · 솔빛수학
+      <footer className="border-t bg-neutral-50 py-10 text-sm text-neutral-600">
+        <div className="mx-auto grid max-w-5xl gap-6 px-5 md:grid-cols-3">
+          <div>
+            <p className="font-semibold text-[#3d8900]">솔빛수학</p>
+            <p className="mt-2">서울시 강남구 테헤란로 00</p>
+            <p>02-000-0000 · hello@solbit.ac.kr</p>
+          </div>
+          <div className="space-y-1">
+            <a href="#about">소개</a><br />
+            <a href="#teachers">강사진</a><br />
+            <a href="#visit">방문 예약</a>
+          </div>
+          <div>
+            <p>이용약관 · 개인정보처리방침</p>
+            <p className="mt-2">Instagram · YouTube</p>
+            <p className="mt-4 text-xs">© {new Date().getFullYear()} 솔빛수학. All rights reserved.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );

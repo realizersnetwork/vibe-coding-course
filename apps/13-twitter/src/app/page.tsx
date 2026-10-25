@@ -11,6 +11,7 @@ type Chirp = {
   likes: number;
   liked: boolean;
   time: string;
+  comments: { id: string; text: string }[];
 };
 
 const seed: Chirp[] = [
@@ -23,6 +24,7 @@ const seed: Chirp[] = [
     likes: 128,
     liked: false,
     time: "2시간",
+    comments: [{ id: "c1", text: "문장 좋다." }],
   },
   {
     id: "2",
@@ -33,6 +35,7 @@ const seed: Chirp[] = [
     likes: 64,
     liked: false,
     time: "5시간",
+    comments: [],
   },
   {
     id: "3",
@@ -43,6 +46,7 @@ const seed: Chirp[] = [
     likes: 210,
     liked: true,
     time: "1일",
+    comments: [],
   },
 ];
 
@@ -125,6 +129,7 @@ export default function Page() {
                     likes: 0,
                     liked: false,
                     time: "지금",
+                    comments: [],
                   },
                   ...prev,
                 ]);
@@ -149,9 +154,27 @@ export default function Page() {
                   <span className="font-bold">{c.name}</span>{" "}
                   <span className="text-white/50">@{c.handle} · {c.time}</span>
                 </p>
+                {c.handle === user.split("@")[0] || c.name === "나" ? (
+                  <div className="mt-2 flex gap-3 text-xs text-white/50">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = prompt("수정", c.text);
+                        if (next == null) return;
+                        setFeed((prev) => prev.map((x) => (x.id === c.id ? { ...x, text: next } : x)));
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button type="button" onClick={() => setFeed((prev) => prev.filter((x) => x.id !== c.id))}>
+                      삭제
+                    </button>
+                  </div>
+                ) : null}
                 <p className="mt-1">{c.text}</p>
+                <div className="mt-2 flex gap-4 text-sm">
                 <button
-                  className={`mt-2 text-sm ${c.liked ? "text-pink-400" : "text-white/50"}`}
+                  className={c.liked ? "text-pink-400" : "text-white/50"}
                   onClick={() =>
                     setFeed((prev) =>
                       prev.map((x) =>
@@ -164,6 +187,24 @@ export default function Page() {
                 >
                   ♥ {c.likes}
                 </button>
+                <button
+                  className="text-white/50"
+                  onClick={() => {
+                    const t = prompt("댓글");
+                    if (!t) return;
+                    setFeed((prev) =>
+                      prev.map((x) =>
+                        x.id === c.id ? { ...x, comments: [...x.comments, { id: String(Date.now()), text: t }] } : x
+                      )
+                    );
+                  }}
+                >
+                  댓글 {c.comments.length}
+                </button>
+                </div>
+                {c.comments.map((cm) => (
+                  <p key={cm.id} className="mt-1 text-sm text-white/60">↳ {cm.text}</p>
+                ))}
               </div>
             </article>
           ))}

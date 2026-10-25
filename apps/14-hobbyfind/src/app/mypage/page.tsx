@@ -1,71 +1,92 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
 import { CATEGORIES, HOBBIES } from "@/data/hobbies";
+import TopBar from "@/components/TopBar";
+import HobbyCard from "@/components/HobbyCard";
 
 export default function MyPage() {
-  const [user, setUser] = useState<string | null>(null);
+  const { data, status } = useSession();
   const [marks, setMarks] = useState<string[]>([]);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
-    const u = localStorage.getItem("hobbyfind-user");
-    if (!u) {
-      location.href = "/login";
+    if (status === "unauthenticated") location.href = "/login";
+    if (status !== "authenticated") return;
+    fetch("/api/bookmarks")
+      .then(async (r) => {
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || "불러오기 실패");
+        setMarks(j.ids || []);
+      })
+      .catch((e) => setErr(e.message));
+  }, [status]);
+
+  async function toggle(id: string) {
+    const res = await fetch("/api/bookmarks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hobbyId: id }),
+    });
+    const j = await res.json();
+    if (!res.ok) {
+      setErr(j.error || "저장 실패");
       return;
     }
-    setUser(u);
-    setMarks(JSON.parse(localStorage.getItem("hobbyfind-marks") || "[]"));
-  }, []);
-
-  const stats = useMemo(() => {
-    return CATEGORIES.map((c) => ({
-      ...c,
-      count: HOBBIES.filter((h) => h.category === c.key && marks.includes(h.id)).length,
-    }));
-  }, [marks]);
+    setMarks((prev) => (j.saved ? [...prev, id] : prev.filter((x) => x !== id)));
+  }
 
   const saved = HOBBIES.filter((h) => marks.includes(h.id));
+  const stats = useMemo(
+    () =>
+      CATEGORIES.map((c) => ({
+        ...c,
+        count: saved.filter((h) => h.category === c.key).length,
+      })),
+    [saved]
+  );
+  const total = saved.length || 1;
+
+  if (status === "loading") {
+    return (
+      <div>
+        <TopBar />
+        <p className="p-10 text-sm text-neutral-400">로딩 중...</p>
+      </div>
+    );
+  }
 
   return (
     <div>
-      <header className="border-b">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 text-sm">
-          <Link href="/" className="font-bold text-rose-600">HobbyFind</Link>
-          <button
-            onClick={() => {
-              localStorage.removeItem("hobbyfind-user");
-              location.href = "/";
-            }}
-          >
-            로그아웃
-          </button>
-        </div>
-      </header>
-      <main className="mx-auto max-w-5xl px-5 py-10">
+      <TopBar />
+      <main className="mx-auto max-w-6xl px-5 py-10">
         <h1 className="text-2xl font-bold">마이페이지</h1>
-        <p className="mt-1 text-neutral-500">{user}</p>
+        <p className="mt-1 text-neutral-500">{data?.user?.email}</p>
+        <p className="mt-2 text-sm">북마크 총 {saved.length}개</p>
+        {err && <p className="mt-2 text-sm text-red-500">{err}</p>}
         <h2 className="mt-8 font-semibold">카테고리별 북마크 통계</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           {stats.map((s) => (
-            <div key={s.key} className="rounded-2xl border p-5">
+            <div key={s.key} className="rounded-2xl border bg-white p-5">
               <p className="text-sm text-neutral-500">{s.label}</p>
-              <p className="text-3xl font-bold text-rose-600">{s.count}</p>
-              <div className="mt-2 h-2 rounded-full bg-rose-100">
-                <div className="h-full rounded-full bg-rose-500" style={{ width: `${Math.min(100, s.count * 25)}%` }} />
+              <p className="text-3xl font-bold text-[#FF385C]">{s.count}</p>
+              <div className="mt-2 h-3 overflow-hidden rounded-full bg-neutral-100">
+                <div
+                  className="h-full rounded-full bg-[#FF385C]"
+                  style={{ width: `${Math.round((s.count / total) * 100)}%` }}
+                />
               </div>
             </div>
           ))}
         </div>
         <h2 className="mt-10 font-semibold">저장한 취미</h2>
-        <ul className="mt-3 space-y-2">
+        <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {saved.map((h) => (
-            <li key={h.id} className="rounded-xl border px-4 py-3">
-              {h.name} · {CATEGORIES.find((c) => c.key === h.category)?.label}
-            </li>
+            <HobbyCard key={h.id} hobby={h} saved onToggle={toggle} showBookmark />
           ))}
-          {saved.length === 0 && <p className="text-sm text-neutral-400">아직 북마크가 없습니다.</p>}
-        </ul>
+        </div>
+        {saved.length === 0 && <p className="mt-4 text-sm text-neutral-400">아직 북마크가 없습니다.</p>}
       </main>
     </div>
   );

@@ -3,11 +3,26 @@
 import { useState } from "react";
 
 const titles = [
-  { id: "t1", name: "오징어 게임", img: "https://images.unsplash.com/photo-1482192505345-5655af888cc4?w=1400&h=700&fit=crop", desc: "생존 게임이 시작된다. 규칙을 어기면 끝이다." },
-  { id: "t2", name: "불꽃", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&h=340&fit=crop", desc: "산 위의 밤." },
-  { id: "t3", name: "해변", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&h=340&fit=crop", desc: "여름의 잔상." },
-  { id: "t4", name: "도시", img: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&h=340&fit=crop", desc: "잠들지 않는 거리." },
-  { id: "t5", name: "숲", img: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=340&fit=crop", desc: "발자국만 남긴 길." },
+  { id: "t1", name: "오징어 게임", img: "https://images.unsplash.com/photo-1482192505345-5655af888cc4?w=800&h=450&fit=crop", desc: "생존 게임이 시작된다." },
+  { id: "t2", name: "불꽃", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=450&fit=crop", desc: "산 위의 밤." },
+  { id: "t3", name: "해변", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=450&fit=crop", desc: "여름의 잔상." },
+  { id: "t4", name: "도시", img: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&h=450&fit=crop", desc: "잠들지 않는 거리." },
+  { id: "t5", name: "숲", img: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&h=450&fit=crop", desc: "발자국만 남긴 길." },
+  { id: "t6", name: "안개", img: "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?w=800&h=450&fit=crop", desc: "보이지 않는 적." },
+  { id: "t7", name: "열차", img: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=800&h=450&fit=crop", desc: "끝없는 레일." },
+  { id: "t8", name: "사막", img: "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&h=450&fit=crop", desc: "모래 위의 발자국." },
+  { id: "t9", name: "비", img: "https://images.unsplash.com/photo-1428908728789-d2de25dbd4e2?w=800&h=450&fit=crop", desc: "창밖의 밤." },
+  { id: "t10", name: "등대", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=450&fit=crop&sat=-20", desc: "마지막 빛." },
+  { id: "t11", name: "시장", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=450&fit=crop", desc: "냄새와 목소리." },
+  { id: "t12", name: "서고", img: "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&h=450&fit=crop", desc: "먼지 쌓인 이름." },
+  { id: "t13", name: "무대", img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&h=450&fit=crop", desc: "조명이 꺼지기 전." },
+  { id: "t14", name: "터널", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=450&fit=crop", desc: "끝은 아직 없다." },
+  { id: "t15", name: "항구", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=450&fit=crop&hue=20", desc: "떠나는 배." },
+  { id: "t16", name: "옥상", img: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&h=450&fit=crop&hue=40", desc: "도시 위의 숨." },
+  { id: "t17", name: "눈", img: "https://images.unsplash.com/photo-1418985991508-e47386d3a511?w=800&h=450&fit=crop", desc: "발자국이 지워진다." },
+  { id: "t18", name: "불", img: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&h=450&fit=crop&hue=30", desc: "남은 온기." },
+  { id: "t19", name: "섬", img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=450&fit=crop&hue=80", desc: "물 위의 집." },
+  { id: "t20", name: "길", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=450&fit=crop&hue=50", desc: "아직 걸어갈 밤." },
 ];
 
 export default function Page() {
@@ -58,10 +73,10 @@ export default function Page() {
       </section>
       <section className="px-8 py-8">
         <h3 className="mb-3 font-semibold">인기 콘텐츠</h3>
-        <div className="flex gap-3 overflow-x-auto">
-          {titles.slice(1).map((t) => (
-            <button key={t.id} className="w-48 shrink-0 transition hover:scale-105" onClick={() => setDetail(t)}>
-              <img src={t.img} alt={t.name} className="h-28 w-48 rounded object-cover" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {titles.map((t) => (
+            <button key={t.id} className="transition hover:scale-105" onClick={() => setDetail(t)}>
+              <img src={t.img} alt={t.name} className="aspect-video w-full rounded object-cover" />
               <p className="mt-1 text-left text-sm">{t.name}</p>
             </button>
           ))}

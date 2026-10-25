@@ -1,99 +1,111 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 import { CATEGORIES, HOBBIES, type Category } from "@/data/hobbies";
-
-const KEY = "hobbyfind-user";
+import TopBar from "@/components/TopBar";
+import HobbyCard from "@/components/HobbyCard";
 
 export default function Page() {
-  const [user, setUser] = useState<string | null>(null);
+  const { status } = useSession();
+  const loggedIn = status === "authenticated";
+  const [filter, setFilter] = useState<"all" | Category>("all");
+  const [q, setQ] = useState("");
   const [marks, setMarks] = useState<string[]>([]);
+  const [err, setErr] = useState("");
 
   useEffect(() => {
-    setUser(localStorage.getItem(KEY));
-    setMarks(JSON.parse(localStorage.getItem("hobbyfind-marks") || "[]"));
-  }, []);
+    if (!loggedIn) {
+      setMarks([]);
+      return;
+    }
+    fetch("/api/bookmarks")
+      .then(async (r) => {
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error || "북마크를 불러오지 못했습니다.");
+        setMarks(j.ids || []);
+      })
+      .catch((e) => setErr(e.message));
+  }, [loggedIn]);
 
-  function toggle(id: string) {
-    if (!user) {
+  async function toggle(id: string) {
+    if (!loggedIn) {
       location.href = "/login";
       return;
     }
-    setMarks((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      localStorage.setItem("hobbyfind-marks", JSON.stringify(next));
-      return next;
+    setErr("");
+    const res = await fetch("/api/bookmarks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ hobbyId: id }),
     });
+    const j = await res.json();
+    if (!res.ok) {
+      setErr(j.error || "저장에 실패했습니다.");
+      return;
+    }
+    setMarks((prev) => (j.saved ? [...prev, id] : prev.filter((x) => x !== id)));
   }
+
+  const list = useMemo(() => {
+    const base = filter === "all" ? HOBBIES : HOBBIES.filter((h) => h.category === filter);
+    const s = q.trim();
+    if (!s) return base;
+    return base.filter((h) => h.name.includes(s) || h.summary.includes(s));
+  }, [filter, q]);
 
   return (
     <div>
-      <Top user={user} />
-      <section className="bg-rose-50 py-16">
-        <div className="mx-auto max-w-5xl px-5">
-          <p className="text-sm font-semibold text-rose-500">취미를 찾는 가장 짧은 길</p>
+      <TopBar />
+      <motion.section
+        className="bg-white py-16"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="mx-auto max-w-6xl px-5">
+          <p className="text-sm font-semibold text-[#FF385C]">취미를 찾는 가장 짧은 길</p>
           <h1 className="mt-2 text-4xl font-bold">오늘, 어떤 사람이 되고 싶나요?</h1>
-          <p className="mt-3 text-neutral-600">운동형 · 지능형 · 예술형 세 갈래로 취미를 고르고 북마크하세요.</p>
+          <p className="mt-3 max-w-xl text-neutral-600">
+            운동형 · 지능형 · 예술형으로 나뉜 취미를 둘러보고, 로그인 후 북마크하세요.
+          </p>
+        </div>
+      </motion.section>
+      <section className="mx-auto max-w-6xl px-5 py-8">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            className={`rounded-full px-4 py-1.5 text-sm ${filter === "all" ? "bg-neutral-900 text-white" : "bg-white border"}`}
+          >
+            전체
+          </button>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="취미 검색"
+            className="rounded-full border bg-white px-4 py-1.5 text-sm"
+          />
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.key}
+              type="button"
+              onClick={() => (location.href = `/category/${c.key}`)}
+              className="rounded-full border bg-white px-4 py-1.5 text-sm"
+            >
+              {c.label}
+            </button>
+          ))}
+        </div>
+        {err && <p className="mt-4 text-sm text-red-500">{err}</p>}
+        {status === "loading" && <p className="mt-6 text-sm text-neutral-400">로딩 중...</p>}
+        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((h) => (
+            <HobbyCard key={h.id} hobby={h} saved={marks.includes(h.id)} onToggle={toggle} showBookmark />
+          ))}
         </div>
       </section>
-      {CATEGORIES.map((c) => (
-        <CategoryRow key={c.key} cat={c.key} label={c.label} marks={marks} onToggle={toggle} />
-      ))}
     </div>
   );
 }
-
-function Top({ user }: { user: string | null }) {
-  return (
-    <header className="border-b">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 text-sm">
-        <Link href="/" className="font-bold text-rose-600">HobbyFind</Link>
-        <nav className="flex gap-4">
-          <Link href="/category/sports">운동형</Link>
-          <Link href="/category/intelligence">지능형</Link>
-          <Link href="/category/art">예술형</Link>
-          {user ? <Link href="/mypage">마이페이지</Link> : <Link href="/login">로그인</Link>}
-        </nav>
-      </div>
-    </header>
-  );
-}
-
-function CategoryRow({
-  cat,
-  label,
-  marks,
-  onToggle,
-}: {
-  cat: Category;
-  label: string;
-  marks: string[];
-  onToggle: (id: string) => void;
-}) {
-  const items = useMemo(() => HOBBIES.filter((h) => h.category === cat).slice(0, 4), [cat]);
-  return (
-    <section className="mx-auto max-w-5xl px-5 py-10">
-      <div className="mb-4 flex items-end justify-between">
-        <h2 className="text-2xl font-bold">{label}</h2>
-        <Link href={`/category/${cat}`} className="text-sm text-rose-600">더보기</Link>
-      </div>
-      <div className="grid gap-4 md:grid-cols-4">
-        {items.map((h) => (
-          <article key={h.id} className="overflow-hidden rounded-2xl border">
-            <img src={h.img} alt="" className="h-36 w-full object-cover" />
-            <div className="p-4">
-            <h3 className="font-semibold">{h.name}</h3>
-            <p className="mt-1 text-sm text-neutral-500">{h.summary}</p>
-            <button className="mt-3 text-sm text-rose-600" onClick={() => onToggle(h.id)}>
-              {marks.includes(h.id) ? "북마크 해제" : "북마크"}
-            </button>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export { Top };

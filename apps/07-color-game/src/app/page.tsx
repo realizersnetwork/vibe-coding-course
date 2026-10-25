@@ -35,7 +35,7 @@ export default function Page() {
   function click(i: number) {
     if (over) return;
     if (i === odd) {
-      setScore((s) => s + 1);
+      setScore((s) => s + stage * 10 + left);
       setStage((s) => s + 1);
     } else {
       setLeft((s) => Math.max(0, s - 3));
