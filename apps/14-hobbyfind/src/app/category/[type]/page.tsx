@@ -42,12 +42,15 @@ export default function CategoryPage() {
         <h1 className="text-3xl font-bold">{label}</h1>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {items.map((h) => (
-            <article key={h.id} className="rounded-2xl border p-5">
+            <article key={h.id} className="overflow-hidden rounded-2xl border">
+              <img src={h.img} alt="" className="h-44 w-full object-cover" />
+              <div className="p-5">
               <h2 className="text-lg font-semibold">{h.name}</h2>
               <p className="mt-2 text-sm text-neutral-500">{h.summary}</p>
               <button className="mt-4 text-sm font-semibold text-rose-600" onClick={() => toggle(h.id)}>
                 {marks.includes(h.id) ? "북마크 해제" : "북마크"}
               </button>
+              </div>
             </article>
           ))}
         </div>

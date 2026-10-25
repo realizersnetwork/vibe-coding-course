@@ -80,12 +80,15 @@ function CategoryRow({
       </div>
       <div className="grid gap-4 md:grid-cols-4">
         {items.map((h) => (
-          <article key={h.id} className="rounded-2xl border p-4">
+          <article key={h.id} className="overflow-hidden rounded-2xl border">
+            <img src={h.img} alt="" className="h-36 w-full object-cover" />
+            <div className="p-4">
             <h3 className="font-semibold">{h.name}</h3>
             <p className="mt-1 text-sm text-neutral-500">{h.summary}</p>
             <button className="mt-3 text-sm text-rose-600" onClick={() => onToggle(h.id)}>
               {marks.includes(h.id) ? "북마크 해제" : "북마크"}
             </button>
+            </div>
           </article>
         ))}
       </div>
