@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 function requireEnv(name: string) {
   const v = process.env[name];
-  if (!v) throw new Error(`${name} 환경변수가 없습니다. SETUP.md를 확인하세요.`);
+  if (!v) throw new Error(`${name} 환경변수가 없습니다.`);
   return v;
 }
 
