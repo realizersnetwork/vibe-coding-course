@@ -1,7 +1,9 @@
 @import "tailwindcss";
+html { color-scheme: light; }
 
 body {
   margin: 0;
+  background: #fff;
   font-family: "Pretendard", "Noto Sans KR", sans-serif;
   color: #111;
 }
