@@ -90,6 +90,20 @@ export default function SignupPage() {
         <button disabled={loading} className="mt-4 w-full rounded-lg bg-[#FF385C] py-2 text-white">
           {loading ? "가입 중..." : "가입하기"}
         </button>
+        <button
+          type="button"
+          className="mt-2 w-full rounded-lg border py-2 text-sm font-medium"
+          onClick={() => signIn("google", { callbackUrl: "/mypage" })}
+        >
+          Google로 가입
+        </button>
+        <button
+          type="button"
+          className="mt-2 w-full rounded-lg bg-[#FEE500] py-2 text-sm font-medium text-black"
+          onClick={() => signIn("kakao", { callbackUrl: "/mypage" })}
+        >
+          카카오로 가입
+        </button>
         <p className="mt-3 text-center text-sm">
           이미 계정이 있나요?{" "}
           <Link href="/login" className="text-[#FF385C]">

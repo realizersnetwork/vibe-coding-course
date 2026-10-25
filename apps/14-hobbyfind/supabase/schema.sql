@@ -2,9 +2,13 @@
 create table if not exists public.app_users (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
-  password_hash text not null,
+  password_hash text,
+  provider text not null default 'credentials',
   created_at timestamptz default now()
 );
+
+alter table public.app_users alter column password_hash drop not null;
+alter table public.app_users add column if not exists provider text not null default 'credentials';
 
 create table if not exists public.bookmarks (
   id uuid primary key default gen_random_uuid(),

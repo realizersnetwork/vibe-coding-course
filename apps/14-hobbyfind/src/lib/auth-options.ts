@@ -1,8 +1,27 @@
 import type { NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import Kakao from "next-auth/providers/kakao";
 import bcrypt from "bcryptjs";
 import { hasSupabaseEnv, supabaseAdmin } from "./supabase";
+
+async function upsertSocialUser(email: string, provider: string) {
+  const db = supabaseAdmin();
+  const { data: existing, error: findErr } = await db
+    .from("app_users")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+  if (findErr) throw new Error(findErr.message);
+  if (existing?.id) return existing.id as string;
+  const { data: created, error } = await db
+    .from("app_users")
+    .insert({ email, password_hash: null, provider })
+    .select("id")
+    .single();
+  if (error || !created) throw new Error(error?.message || "소셜 계정 생성 실패");
+  return created.id as string;
+}
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -27,12 +46,20 @@ export const authOptions: NextAuthOptions = {
           .eq("email", credentials.email)
           .maybeSingle();
         if (error) throw new Error(error.message);
-        if (!data) return null;
+        if (!data?.password_hash) return null;
         const ok = await bcrypt.compare(credentials.password, data.password_hash);
         if (!ok) return null;
         return { id: data.id, email: data.email };
       },
     }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
     ...(process.env.KAKAO_CLIENT_ID && process.env.KAKAO_CLIENT_SECRET
       ? [
           Kakao({
@@ -43,9 +70,34 @@ export const authOptions: NextAuthOptions = {
       : []),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user?.id) token.uid = user.id;
+    async signIn({ user, account }) {
+      if (!account || account.provider === "credentials") return true;
+      if (!user.email) return false;
+      if (!hasSupabaseEnv()) return false;
+      try {
+        const id = await upsertSocialUser(user.email, account.provider);
+        user.id = id;
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    async jwt({ token, user, account }) {
       if (user?.email) token.email = user.email;
+      if (account?.provider === "credentials" && user?.id) {
+        token.uid = user.id;
+        return token;
+      }
+      if (user?.email && hasSupabaseEnv()) {
+        const { data } = await supabaseAdmin()
+          .from("app_users")
+          .select("id")
+          .eq("email", user.email)
+          .maybeSingle();
+        if (data?.id) token.uid = data.id;
+      } else if (user?.id) {
+        token.uid = user.id;
+      }
       return token;
     },
     async session({ session, token }) {

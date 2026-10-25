@@ -50,15 +50,20 @@ export default function LoginPage() {
         <button disabled={loading} className="mt-4 w-full rounded-lg bg-[#FF385C] py-2 text-white">
           {loading ? "확인 중..." : "로그인"}
         </button>
-        {process.env.NEXT_PUBLIC_KAKAO_ENABLED === "1" && (
-          <button
-            type="button"
-            className="mt-2 w-full rounded-lg bg-[#FEE500] py-2 text-sm font-medium text-black"
-            onClick={() => signIn("kakao", { callbackUrl: "/mypage" })}
-          >
-            카카오로 로그인
-          </button>
-        )}
+        <button
+          type="button"
+          className="mt-2 w-full rounded-lg border py-2 text-sm font-medium"
+          onClick={() => signIn("google", { callbackUrl: "/mypage" })}
+        >
+          Google로 로그인
+        </button>
+        <button
+          type="button"
+          className="mt-2 w-full rounded-lg bg-[#FEE500] py-2 text-sm font-medium text-black"
+          onClick={() => signIn("kakao", { callbackUrl: "/mypage" })}
+        >
+          카카오로 로그인
+        </button>
         <p className="mt-3 text-center text-sm">
           계정이 없나요?{" "}
           <Link href="/signup" className="text-[#FF385C]">
