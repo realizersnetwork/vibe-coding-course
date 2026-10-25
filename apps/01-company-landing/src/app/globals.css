@@ -1,4 +1,0 @@
-@import "tailwindcss";
-html { color-scheme: light; }
-body { margin: 0; background: #fff; color: #111; font-family: "Pretendard", "Noto Sans KR", sans-serif; }
-html { scroll-behavior: smooth; }

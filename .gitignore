@@ -1,6 +1,7 @@
 # Course materials (copyrighted lecture files — never push)
 _lecture/
 *.zip
+apps/
 
 # Dependencies
 node_modules/
