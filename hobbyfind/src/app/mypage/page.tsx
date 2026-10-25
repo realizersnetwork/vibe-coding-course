@@ -58,12 +58,12 @@ export default function MyPage() {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#F7F7F7]">
       <TopBar />
       <main className="mx-auto max-w-6xl px-5 py-10">
-        <h1 className="text-2xl font-bold">마이페이지</h1>
-        <p className="mt-1 text-neutral-500">{data?.user?.email}</p>
-        <p className="mt-2 text-sm">북마크 총 {saved.length}개</p>
+        <h1 className="text-3xl font-bold text-[#222222]">마이페이지</h1>
+        <p className="mt-1 text-[#737373]">{data?.user?.email}</p>
+        <p className="mt-2 text-sm font-medium">북마크 총 {saved.length}개</p>
         {err && <p className="mt-2 text-sm text-red-500">{err}</p>}
         <h2 className="mt-8 font-semibold">카테고리별 북마크 통계</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-3">

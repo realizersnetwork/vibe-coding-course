@@ -47,14 +47,14 @@ export default function CategoryPage() {
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#F7F7F7]">
       <TopBar />
       <main className="mx-auto max-w-6xl px-5 py-10">
-        <p className="text-sm text-[#FF385C]">카테고리</p>
-        <h1 className="text-3xl font-bold">{cat?.label || type}</h1>
-        <p className="mt-2 text-neutral-600">{cat?.intro}</p>
+        <p className="text-sm font-semibold text-[#FF385C]">카테고리</p>
+        <h1 className="mt-1 text-3xl font-bold text-[#222222]">{cat?.label || type}</h1>
+        <p className="mt-2 text-[#737373]">{cat?.intro}</p>
         {err && <p className="mt-3 text-sm text-red-500">{err}</p>}
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((h) => (
             <HobbyCard key={h.id} hobby={h} saved={marks.includes(h.id)} onToggle={toggle} showBookmark />
           ))}

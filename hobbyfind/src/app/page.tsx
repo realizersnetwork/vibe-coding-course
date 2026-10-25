@@ -56,55 +56,62 @@ export default function Page() {
   }, [filter, q]);
 
   return (
-    <div>
+    <div className="min-h-screen bg-[#F7F7F7]">
       <TopBar />
       <motion.section
-        className="bg-white py-16"
-        initial={{ opacity: 0, y: 12 }}
+        className="bg-white py-20"
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <div className="mx-auto max-w-6xl px-5">
-          <p className="text-sm font-semibold text-[#FF385C]">취미를 찾는 가장 짧은 길</p>
-          <h1 className="mt-2 text-4xl font-bold">오늘, 어떤 사람이 되고 싶나요?</h1>
-          <p className="mt-3 max-w-xl text-neutral-600">
-            운동형 · 지능형 · 예술형으로 나뉜 취미를 둘러보고, 로그인 후 북마크하세요.
+          <p className="text-sm font-semibold tracking-wide text-[#FF385C]">HOBBYFIND</p>
+          <h1 className="mt-3 text-4xl font-bold leading-tight text-[#222222] md:text-5xl">
+            오늘, 어떤 취미를
+            <br />
+            시작해 볼까요?
+          </h1>
+          <p className="mt-4 max-w-xl text-lg text-[#737373]">
+            운동형 · 지능형 · 예술형으로 나눈 18가지 취미를 둘러보고, 마음에 드는 것을 북마크하세요.
           </p>
         </div>
       </motion.section>
-      <section className="mx-auto max-w-6xl px-5 py-8">
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => setFilter("all")}
-            className={`rounded-full px-4 py-1.5 text-sm ${filter === "all" ? "bg-neutral-900 text-white" : "bg-white border"}`}
-          >
-            전체
-          </button>
+      <section className="mx-auto max-w-6xl px-5 py-10">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="취미 검색"
-            className="rounded-full border bg-white px-4 py-1.5 text-sm"
+            className="h-11 flex-1 rounded-full border border-[#E5E5E5] bg-white px-5 text-sm outline-none focus:border-[#FF385C]"
           />
-          {CATEGORIES.map((c) => (
+          <div className="flex flex-wrap gap-2">
             <button
-              key={c.key}
               type="button"
-              onClick={() => (location.href = `/category/${c.key}`)}
-              className="rounded-full border bg-white px-4 py-1.5 text-sm"
+              onClick={() => setFilter("all")}
+              className={`rounded-full px-4 py-2 text-sm ${filter === "all" ? "bg-[#222222] text-white" : "border border-[#E5E5E5] bg-white"}`}
             >
-              {c.label}
+              전체
             </button>
-          ))}
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => (location.href = `/category/${c.key}`)}
+                className="rounded-full border border-[#E5E5E5] bg-white px-4 py-2 text-sm hover:border-[#FF385C] hover:text-[#FF385C]"
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
         </div>
         {err && <p className="mt-4 text-sm text-red-500">{err}</p>}
         {status === "loading" && <p className="mt-6 text-sm text-neutral-400">로딩 중...</p>}
-        <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((h) => (
             <HobbyCard key={h.id} hobby={h} saved={marks.includes(h.id)} onToggle={toggle} showBookmark />
           ))}
         </div>
+        {list.length === 0 && <p className="mt-10 text-center text-sm text-[#737373]">검색 결과가 없습니다.</p>}
       </section>
     </div>
   );

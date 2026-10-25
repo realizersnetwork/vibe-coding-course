@@ -39,30 +39,11 @@ Supabase, NextAuth.js, bcryptjs
 
 ## 시작하기
 
+데모는 위에서 바로 확인할 수 있습니다.
+
 ```bash
 git clone https://github.com/realizersnetwork/vibe-coding-course.git
 cd vibe-coding-course/hobbyfind
 npm install
-```
-
-`.env.local`을 만들고 아래 값을 채웁니다.
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-NEXTAUTH_SECRET=
-NEXTAUTH_URL=http://localhost:3000
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-KAKAO_CLIENT_ID=
-KAKAO_CLIENT_SECRET=
-```
-
-Supabase SQL Editor에서 `hobbyfind/supabase/schema.sql`을 실행한 뒤:
-
-```bash
 npm run dev
 ```
-
-브라우저: http://localhost:3000
