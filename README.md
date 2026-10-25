@@ -2,7 +2,7 @@
 
 계정: [realizersnetwork](https://github.com/realizersnetwork/vibe-coding-course)
 
-강의 실습을 과제별로 분리한 저장소입니다. 파이널 HobbyFind는 NextAuth + Supabase + Google/카카오 로그인이 배포되어 있습니다.
+강의 실습을 과제별로 분리한 저장소입니다. 중급 파이널은 `hobbyfind` 폴더입니다.
 
 ## 과제 목록
 
@@ -21,7 +21,7 @@
 | `apps/11-book-recommend` | Step 5 | Shelf 추천 도서 | https://11-book-recommend.vercel.app |
 | `apps/12-chatbot` | Step 5 | 솔빛 상담봇 | https://12-chatbot.vercel.app |
 | `apps/13-twitter` | Step 5 | Chirp | https://13-twitter.vercel.app |
-| `apps/14-hobbyfind` | Final | HobbyFind 중급 | https://14-hobbyfind.vercel.app |
+| `hobbyfind` | Final | HobbyFind 중급 | https://14-hobbyfind.vercel.app |
 
 ## 로컬 실행
 
