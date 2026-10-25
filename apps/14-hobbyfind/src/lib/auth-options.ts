@@ -72,6 +72,9 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (!account || account.provider === "credentials") return true;
+      if (!user.email && account.provider === "kakao" && user.id) {
+        user.email = `kakao-${user.id}@kakao.local`;
+      }
       if (!user.email) return false;
       if (!hasSupabaseEnv()) return false;
       try {
