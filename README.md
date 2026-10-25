@@ -2,7 +2,7 @@
 
 계정: [realizersnetwork](https://github.com/realizersnetwork/vibe-coding-course)
 
-강의 실습을 과제별로 분리한 저장소입니다. 키 없이도 로컬·배포에서 동작합니다.
+강의 실습을 과제별로 분리한 저장소입니다. 파이널 HobbyFind는 NextAuth + Supabase + Google/카카오 로그인이 배포되어 있습니다.
 
 ## 과제 목록
 

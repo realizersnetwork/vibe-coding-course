@@ -13,8 +13,11 @@ export default function LoginPage() {
   useEffect(() => {
     const e = new URLSearchParams(location.search).get("error");
     if (!e) return;
-    if (e === "google") setErr("Google 로그인은 아직 키가 없습니다.");
-    else setErr("카카오 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    if (e === "google" || e === "OAuthSignin" || e === "OAuthCallback") {
+      setErr("소셜 로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    } else {
+      setErr("로그인에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
   }, []);
 
   return (
